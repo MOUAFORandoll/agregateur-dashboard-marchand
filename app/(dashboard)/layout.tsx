@@ -7,6 +7,7 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { PageLoader } from "@/components/ui/page-loader";
 
 export default function DashboardLayout({
   children,
@@ -18,14 +19,7 @@ export default function DashboardLayout({
 
   // Show loading state while hydrating
   if (!isHydrated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader text="Loading dashboard..." />;
   }
 
   // AuthProvider handles routing, so if we reach here, user is authenticated

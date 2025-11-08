@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore, type UserRole, getRoleRoute } from "@/stores/auth.store";
+import { PageLoader } from "@/components/ui/page-loader";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -71,14 +72,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Show loading state while hydrating
   if (!isHydrated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader text="Loading..." />;
   }
 
   return <>{children}</>;

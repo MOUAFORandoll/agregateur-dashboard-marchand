@@ -5,6 +5,7 @@ import { useTransfersStore } from "@/stores/transfers.store";
 import { TransfersTable } from "@/components/shared/transfers-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { Plus, Building2, Smartphone, RefreshCw, Shield } from "lucide-react";
 import Link from "next/link";
 
@@ -101,16 +102,10 @@ export default function TransfersPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-muted-foreground">Loading transfers...</div>
-            </div>
+            <DataTableSkeleton columnCount={6} rowCount={5} />
           ) : (
             <Suspense
-              fallback={
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-muted-foreground">Loading table...</div>
-                </div>
-              }
+              fallback={<DataTableSkeleton columnCount={6} rowCount={5} />}
             >
               <TransfersTable data={Array.isArray(transfers) ? transfers : []} isLoading={isLoading} />
             </Suspense>

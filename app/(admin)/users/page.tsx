@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { usersController } from "@/controllers/users.controller";
 import { UsersTable } from "@/components/shared/users-table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { UserDto } from "@/types/api";
@@ -44,8 +45,8 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <Card>
+    <div className="flex flex-col gap-6 p-6 animate-fade-in">
+      <Card className="animate-slide-up">
         <CardHeader>
           <CardTitle>User Management</CardTitle>
           <CardDescription>
@@ -54,16 +55,10 @@ export default function AdminUsersPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-muted-foreground">Loading users...</div>
-            </div>
+            <DataTableSkeleton columnCount={6} rowCount={5} />
           ) : (
             <Suspense
-              fallback={
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-muted-foreground">Loading table...</div>
-                </div>
-              }
+              fallback={<DataTableSkeleton columnCount={6} rowCount={5} />}
             >
               <UsersTable
                 data={users}

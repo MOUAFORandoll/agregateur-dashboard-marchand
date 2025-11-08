@@ -5,6 +5,7 @@ import { useTransfersStore } from "@/stores/transfers.store";
 import { TransfersTable } from "@/components/shared/transfers-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { Plus, Building2, Smartphone, RefreshCw, Shield } from "lucide-react";
 import Link from "next/link";
 
@@ -16,9 +17,9 @@ export default function TransfersPage() {
   }, [fetchTransfers]);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 animate-fade-in">
       {/* Header Section */}
-      <div className="flex flex-col items-center justify-center gap-4 rounded-lg bg-green-50 p-8 text-center">
+      <div className="flex flex-col items-center justify-center gap-4 rounded-lg bg-green-50 p-8 text-center animate-slide-up">
         <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-green-100">
           <div className="flex h-12 w-12 items-center justify-center rounded bg-green-200">
             <span className="text-2xl font-bold text-green-700">$</span>
@@ -101,16 +102,10 @@ export default function TransfersPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-muted-foreground">Loading transfers...</div>
-            </div>
+            <DataTableSkeleton columnCount={6} rowCount={5} />
           ) : (
             <Suspense
-              fallback={
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-muted-foreground">Loading table...</div>
-                </div>
-              }
+              fallback={<DataTableSkeleton columnCount={6} rowCount={5} />}
             >
               <TransfersTable data={transfers} isLoading={isLoading} />
             </Suspense>

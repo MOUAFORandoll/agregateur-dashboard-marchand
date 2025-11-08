@@ -5,6 +5,7 @@ import { usePaymentsStore } from "@/stores/payments.store";
 import { PaymentsTable } from "@/components/shared/payments-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { Plus, Zap, RefreshCw, CreditCard, Clock } from "lucide-react";
 import Link from "next/link";
 
@@ -22,9 +23,9 @@ export default function PaymentsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 animate-fade-in">
       {/* Header Section */}
-      <div className="flex flex-col items-center justify-center gap-4 rounded-lg bg-green-50 p-8 text-center">
+      <div className="flex flex-col items-center justify-center gap-4 rounded-lg bg-green-50 p-8 text-center animate-slide-up">
         <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-green-100">
           <Zap className="h-8 w-8 text-green-600" />
         </div>
@@ -48,7 +49,7 @@ export default function PaymentsPage() {
 
       {/* Features Section */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="animate-slide-up stagger-1">
           <CardHeader>
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded bg-green-100">
               <Zap className="h-5 w-5 text-green-600" />
@@ -60,7 +61,7 @@ export default function PaymentsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-slide-up stagger-2">
           <CardHeader>
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded bg-blue-100">
               <RefreshCw className="h-5 w-5 text-blue-600" />
@@ -72,7 +73,7 @@ export default function PaymentsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-slide-up stagger-3">
           <CardHeader>
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded bg-purple-100">
               <CreditCard className="h-5 w-5 text-purple-600" />
@@ -86,7 +87,7 @@ export default function PaymentsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-slide-up stagger-4">
           <CardHeader>
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded bg-orange-100">
               <Clock className="h-5 w-5 text-orange-600" />
@@ -100,23 +101,17 @@ export default function PaymentsPage() {
       </div>
 
       {/* Payments Table */}
-      <Card>
+      <Card className="animate-slide-up stagger-5">
         <CardHeader>
           <CardTitle>Recent Payments</CardTitle>
           <CardDescription>View and manage your payment transactions</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-muted-foreground">Loading payments...</div>
-            </div>
+            <DataTableSkeleton columnCount={7} rowCount={5} />
           ) : (
             <Suspense
-              fallback={
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-muted-foreground">Loading table...</div>
-                </div>
-              }
+              fallback={<DataTableSkeleton columnCount={7} rowCount={5} />}
             >
               <PaymentsTable
                 data={payments}
