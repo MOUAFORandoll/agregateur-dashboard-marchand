@@ -123,11 +123,6 @@ export default function AdminPage() {
                   </CardTitle>
                 )}
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {card.description}
-                </p>
-              </CardContent>
             </Card>
           );
         })}
