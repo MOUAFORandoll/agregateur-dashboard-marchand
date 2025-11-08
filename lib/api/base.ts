@@ -1,5 +1,28 @@
+import axios, { type AxiosRequestConfig, type AxiosError } from "axios";
 import { API_BASE_URL, getAuthHeaders, getAuthToken } from "./config";
 import type { IAppErrorDto } from "@/types/api";
+
+/**
+ * Get the best error message from the error object
+ * Prefers display_messages with language preference, falls back to message
+ */
+const getErrorMessage = (error: IAppErrorDto["error"]): string => {
+  // Prefer display_messages if available
+  if (error.display_messages && error.display_messages.length > 0) {
+    // Try to find English message first
+    const englishMessage = error.display_messages.find(
+      (msg) => msg.lang === "en"
+    );
+    if (englishMessage) {
+      return englishMessage.value;
+    }
+    // Fall back to first available message
+    return error.display_messages[0].value;
+  }
+  
+  // Fall back to the message field
+  return error.message || "An error occurred";
+};
 
 export class ApiError extends Error {
   constructor(
@@ -7,32 +30,41 @@ export class ApiError extends Error {
     public error: IAppErrorDto["error"],
     message?: string
   ) {
-    super(message || error.message);
+    // Use the best error message (prefers display_messages)
+    const errorMessage = getErrorMessage(error);
+    super(message || errorMessage);
     this.name = "ApiError";
   }
 }
 
 /**
- * Show error toast notification
+ * Show error toast notification and log to console
  * Only works on client-side
  */
-const showErrorToast = (error: IAppErrorDto["error"]): void => {
+const handleApiError = (error: IAppErrorDto["error"], status: number): void => {
+  // Always log error to console with full details
+  console.error("API Request Failed:", {
+    status,
+    code: error.code,
+    message: error.message,
+    display_messages: error.display_messages,
+    details: error.details,
+    url: error.url,
+    fullError: error,
+  });
+
+  // Show toast notification (client-side only)
   if (typeof window === "undefined") return;
 
   try {
     // Dynamically import sonner to avoid SSR issues
     const { toast } = require("sonner");
     
-    // Get the error message - prefer display_messages if available
-    let errorMessage = error.message;
-    
-    if (error.display_messages && error.display_messages.length > 0) {
-      // Use the first display message (could be enhanced to use locale)
-      errorMessage = error.display_messages[0].value;
-    }
+    // Get the best error message (prefers display_messages with language preference)
+    const errorMessage = getErrorMessage(error);
 
     // Show appropriate toast based on status code
-    const statusCode = error.status_code;
+    const statusCode = error.status_code || status;
     if (statusCode === 401) {
       toast.error("Authentication required", {
         description: errorMessage,
@@ -50,11 +82,11 @@ const showErrorToast = (error: IAppErrorDto["error"]): void => {
         description: errorMessage || "An error occurred on the server",
       });
     } else {
-      toast.error(errorMessage || "An error occurred");
+      // For 4xx errors (like 400), show the error message directly
+      toast.error(errorMessage);
     }
   } catch {
-    // If sonner is not available, just log to console
-    console.error("API Error:", error);
+    // If sonner is not available, error is already logged to console above
   }
 };
 
@@ -82,7 +114,7 @@ const getTokenFromAuthStore = (): string | null => {
 
 export const apiRequest = async <T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: AxiosRequestConfig = {}
 ): Promise<T> => {
   const url = `${API_BASE_URL}${endpoint}`;
   
@@ -90,80 +122,87 @@ export const apiRequest = async <T>(
   const token = getTokenFromAuthStore();
   
   // Build headers with token from auth store
-  const headers = {
-    ...getAuthHeaders(token),
-    ...options.headers,
-  };
+  const authHeaders = getAuthHeaders(token);
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await axios.request<T>({
+      url,
+      ...options,
+      headers: {
+        ...authHeaders,
+        ...(options.headers as Record<string, string> || {}),
+      } as Record<string, string>,
+    });
 
-  if (!response.ok) {
+    return response.data;
+  } catch (error) {
+    // Handle axios errors
+    const axiosError = error as AxiosError<IAppErrorDto | unknown>;
+    
     let errorData: IAppErrorDto["error"] | null = null;
-    try {
-      const errorResponse = await response.json();
-      if (errorResponse.error) {
-        errorData = errorResponse.error;
+    const status = axiosError.response?.status || 500;
+
+    // Try to extract error from response data
+    const responseData = axiosError.response?.data;
+    
+    if (responseData) {
+      // Check if response follows IAppErrorDto format (has error property)
+      if (
+        typeof responseData === "object" &&
+        responseData !== null &&
+        "error" in responseData
+      ) {
+        const errorDto = responseData as IAppErrorDto;
+        if (errorDto.error) {
+          errorData = errorDto.error;
+        }
       }
-    } catch {
-      // If JSON parsing fails, create a generic error
-      errorData = {
-        code: "UNKNOWN_ERROR",
-        message: response.statusText || "An unknown error occurred",
-        status_code: response.status,
-      };
+      // If response data itself is an error object (direct error format)
+      else if (
+        typeof responseData === "object" &&
+        responseData !== null &&
+        "code" in responseData &&
+        "message" in responseData
+      ) {
+        errorData = responseData as IAppErrorDto["error"];
+      }
     }
 
+    // If no error data found, create a generic error
     const finalError = errorData || {
       code: "UNKNOWN_ERROR",
-      message: response.statusText || "An unknown error occurred",
-      status_code: response.status,
+      message: axiosError.message || axiosError.response?.statusText || "An unknown error occurred",
+      status_code: status,
     };
 
-    // Show toast notification for the error
-    showErrorToast(finalError);
+    // Handle error: show toast and log to console (non-blocking)
+    handleApiError(finalError, status);
 
-    // Create and throw the error (callers can still catch if needed)
-    // But the toast will have already been shown
-    throw new ApiError(response.status, finalError);
+    // Return a rejected promise instead of throwing
+    // This allows calling code to catch it, but prevents Next.js error overlay
+    // The error is already handled (toast shown, logged to console)
+    return Promise.reject(new ApiError(status, finalError));
   }
-
-  // Handle empty responses
-  const contentType = response.headers.get("content-type");
-  if (!contentType || !contentType.includes("application/json")) {
-    return {} as T;
-  }
-
-  return response.json();
 };
 
 export const apiGet = <T>(endpoint: string, params?: Record<string, unknown>): Promise<T> => {
-  const queryString = params
-    ? `?${new URLSearchParams(
-        Object.entries(params).reduce((acc, [key, value]) => {
-          if (value !== undefined && value !== null) {
-            acc[key] = String(value);
-          }
-          return acc;
-        }, {} as Record<string, string>)
-      ).toString()}`
-    : "";
-  return apiRequest<T>(`${endpoint}${queryString}`, { method: "GET" });
+  return apiRequest<T>(endpoint, {
+    method: "GET",
+    params,
+  });
 };
 
 export const apiPost = <T>(endpoint: string, data?: unknown): Promise<T> => {
   return apiRequest<T>(endpoint, {
     method: "POST",
-    body: data ? JSON.stringify(data) : undefined,
+    data,
   });
 };
 
 export const apiPatch = <T>(endpoint: string, data?: unknown): Promise<T> => {
   return apiRequest<T>(endpoint, {
     method: "PATCH",
-    body: data ? JSON.stringify(data) : undefined,
+    data,
   });
 };
 

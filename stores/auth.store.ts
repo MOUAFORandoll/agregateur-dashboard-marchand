@@ -10,56 +10,19 @@ import type {
 
 export type UserRole = "ADMIN" | "MERCHANT" | "CLIENT";
 
-// Dummy user data for each role
-const dummyUsers: Record<UserRole, UserDto> = {
-  ADMIN: {
-    id: "admin-1",
-    fullname: "Admin User",
-    phone: "+1234567890",
-    email: "admin@fastpay.com",
-    country_code: "US",
-    code_phone: "+1",
-    status: "COMPLETE",
-    firebaseNotificationToken: "",
-    balance: 0,
-    role: "ADMIN",
-    kyc_status: "VERIFIED",
-    name: "Admin",
-    surname: "User",
-    birth_day: 1,
-  },
-  MERCHANT: {
-    id: "merchant-1",
-    fullname: "Merchant User",
-    phone: "+1234567891",
-    email: "merchant@fastpay.com",
-    country_code: "US",
-    code_phone: "+1",
-    status: "COMPLETE",
-    firebaseNotificationToken: "",
-    balance: 10000,
-    role: "MERCHANT",
-    kyc_status: "VERIFIED",
-    name: "Merchant",
-    surname: "User",
-    birth_day: 1,
-  },
-  CLIENT: {
-    id: "client-1",
-    fullname: "Client User",
-    phone: "+1234567892",
-    email: "client@fastpay.com",
-    country_code: "US",
-    code_phone: "+1",
-    status: "COMPLETE",
-    firebaseNotificationToken: "",
-    balance: 5000,
-    role: "CLIENT",
-    kyc_status: "VERIFIED",
-    name: "Client",
-    surname: "User",
-    birth_day: 1,
-  },
+/**
+ * Get the route for a user role
+ */
+export const getRoleRoute = (role: UserRole): string => {
+  switch (role) {
+    case "ADMIN":
+      return "/admin";
+    case "MERCHANT":
+      return "/merchant";
+    case "CLIENT":
+    default:
+      return "/dashboard";
+  }
 };
 
 interface AuthState {
@@ -68,7 +31,6 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  currentRole: UserRole | null;
   login: (data: LoginRequestDto) => Promise<void>;
   register: (data: {
     fullname: string;
@@ -78,19 +40,18 @@ interface AuthState {
   logout: () => Promise<void>;
   setUser: (user: UserDto | null) => void;
   clearError: () => void;
-  switchRole: (role: UserRole) => void;
-  initializeDummyUser: (role: UserRole) => void;
+  getRole: () => UserRole | null;
+  getRoleRoute: () => string;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
-      currentRole: null,
 
       login: async (data: LoginRequestDto) => {
         set({ isLoading: true, error: null });
@@ -105,11 +66,10 @@ export const useAuthStore = create<AuthState>()(
             error: null,
           });
         } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : "Login failed";
+          // Error is already handled by API base (toast shown, logged to console)
           set({
             isLoading: false,
-            error: errorMessage,
+            error: null,
             isAuthenticated: false,
           });
           throw error;
@@ -129,11 +89,10 @@ export const useAuthStore = create<AuthState>()(
             error: null,
           });
         } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : "Registration failed";
+          // Error is already handled by API base (toast shown, logged to console)
           set({
             isLoading: false,
-            error: errorMessage,
+            error: null,
             isAuthenticated: false,
           });
           throw error;
@@ -164,24 +123,16 @@ export const useAuthStore = create<AuthState>()(
         set({ error: null });
       },
 
-      switchRole: (role: UserRole) => {
-        const dummyUser = dummyUsers[role];
-        set({
-          currentRole: role,
-          user: dummyUser,
-          isAuthenticated: true,
-        });
+      getRole: (): UserRole | null => {
+        const state = get();
+        return state.user?.role as UserRole | null;
       },
 
-      initializeDummyUser: (role: UserRole) => {
-        const dummyUser = dummyUsers[role];
-        set({
-          currentRole: role,
-          user: dummyUser,
-          isAuthenticated: true,
-          token: `dummy-token-${role.toLowerCase()}`,
-        });
-        setAuthToken(`dummy-token-${role.toLowerCase()}`);
+      getRoleRoute: (): string => {
+        const state = get();
+        const role = state.user?.role as UserRole | null;
+        if (!role) return "/";
+        return getRoleRoute(role);
       },
     }),
     {
@@ -190,7 +141,6 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
-        currentRole: state.currentRole,
       }),
     }
   )

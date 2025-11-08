@@ -21,36 +21,37 @@ export default function LoginPage() {
     try {
       await login({ email, password });
       toast.success("Login successful");
-      router.push("/dashboard");
+      // Get user role from store and navigate to appropriate route
+      const { getRoleRoute } = useAuthStore.getState();
+      const route = getRoleRoute();
+      router.push(route);
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Login failed"
-      );
+      // Error is already handled by API base (toast shown, logged to console)
     }
   };
 
   return (
     <div className="flex min-h-screen">
       {/* Left Side - Branding */}
-      <div className="hidden w-1/2 bg-green-600 lg:flex lg:flex-col lg:justify-between lg:p-12">
+      <div className="hidden w-1/2 bg-primary lg:flex lg:flex-col lg:justify-between lg:p-12">
         <div>
-          <h2 className="mb-8 text-2xl font-bold text-white">
+          <h2 className="mb-8 text-2xl font-bold text-primary-foreground">
             They trust us
           </h2>
           <div className="flex gap-8">
-            <div className="flex items-center gap-2 text-white">
+            <div className="flex items-center gap-2 text-primary-foreground">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500">
                 <span className="text-xl font-bold">G</span>
               </div>
               <span>Genuka</span>
             </div>
-            <div className="flex items-center gap-2 text-white">
+            <div className="flex items-center gap-2 text-primary-foreground">
               <div className="flex h-12 w-12 items-center justify-center rounded bg-blue-500">
                 <span className="text-xl">🛒</span>
               </div>
               <span>Laravel Shopper</span>
             </div>
-            <div className="flex items-center gap-2 text-white">
+            <div className="flex items-center gap-2 text-primary-foreground">
               <div className="flex h-12 w-12 items-center justify-center rounded bg-red-500">
                 <span className="text-xl">L</span>
               </div>
@@ -59,7 +60,7 @@ export default function LoginPage() {
           </div>
         </div>
         <div>
-          <h2 className="mb-4 text-2xl font-bold text-white">
+          <h2 className="mb-4 text-2xl font-bold text-primary-foreground">
             Our customers and their experience
           </h2>
           <Card>
@@ -76,7 +77,7 @@ export default function LoginPage() {
                 exceptional. Notch Pay is truly a partner for growth."
               </p>
               <div className="flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                   <span>SK</span>
                 </div>
                 <div>
@@ -95,10 +96,10 @@ export default function LoginPage() {
       <div className="flex w-full flex-col justify-center p-8 lg:w-1/2">
         <div className="mx-auto w-full max-w-md">
           <div className="mb-8 flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded bg-green-600">
-              <span className="text-xl font-bold text-white">N</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded bg-primary">
+              <span className="text-xl font-bold text-primary-foreground">N</span>
             </div>
-            <span className="text-xl font-bold text-green-600">Notch Pay</span>
+            <span className="text-xl font-bold text-primary">Notch Pay</span>
           </div>
 
           <div className="mb-8">
@@ -133,7 +134,7 @@ export default function LoginPage() {
                     <Label htmlFor="password">Your password</Label>
                     <Link
                       href="/forgot-password"
-                      className="text-sm text-green-600 hover:underline"
+                      className="text-sm text-primary hover:underline"
                     >
                       Forgot password?
                     </Link>
@@ -148,7 +149,7 @@ export default function LoginPage() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full"
                   disabled={isLoading}
                 >
                   {isLoading ? "Signing in..." : "Sign in to your account"}
@@ -161,7 +162,7 @@ export default function LoginPage() {
                 </span>
                 <Link
                   href="/register"
-                  className="text-green-600 hover:underline"
+                  className="text-primary hover:underline"
                 >
                   Create a free account
                 </Link>

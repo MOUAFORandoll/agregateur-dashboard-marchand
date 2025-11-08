@@ -116,8 +116,8 @@ const getNavigationForRole = (role: UserRole | null) => {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, currentRole } = useAuthStore()
-  const role = currentRole || (user?.role as UserRole) || "CLIENT"
+  const { user, getRole } = useAuthStore()
+  const role = getRole() || "CLIENT"
   const navigation = getNavigationForRole(role)
 
   const userData = user

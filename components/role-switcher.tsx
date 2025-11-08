@@ -2,13 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth.store";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, Store, User } from "lucide-react";
@@ -37,21 +30,15 @@ const roleConfig: Record<UserRole, { label: string; icon: React.ReactNode; route
 
 export const RoleSwitcher = () => {
   const router = useRouter();
-  const { user, switchRole, currentRole } = useAuthStore();
-
-  const handleRoleChange = (newRole: UserRole) => {
-    switchRole(newRole);
-    const config = roleConfig[newRole];
-    router.push(config.route);
-  };
+  const { user, getRole, getRoleRoute } = useAuthStore();
 
   const handleGoToDashboard = () => {
-    const role = currentRole || (user?.role as UserRole) || "CLIENT";
-    const config = roleConfig[role];
-    router.push(config.route);
+    const route = getRoleRoute();
+    router.push(route);
   };
 
-  const currentRoleValue = currentRole || (user?.role as UserRole) || "CLIENT";
+  const currentRole = getRole();
+  const currentRoleValue = currentRole || "CLIENT";
   const currentConfig = roleConfig[currentRoleValue];
 
   return (
@@ -65,27 +52,20 @@ export const RoleSwitcher = () => {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Current Role</label>
-          <Select value={currentRoleValue} onValueChange={handleRoleChange}>
-            <SelectTrigger className="w-full">
-              <div className="flex items-center gap-2">
-                {currentConfig.icon}
-                <SelectValue />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(roleConfig).map(([role, config]) => (
-                <SelectItem key={role} value={role}>
-                  <div className="flex items-center gap-2">
-                    {config.icon}
-                    <span>{config.label}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-sm text-muted-foreground">
-            {currentConfig.description}
-          </p>
+          <div className="flex items-center gap-2 rounded-md border p-3">
+            {currentConfig.icon}
+            <div className="flex-1">
+              <div className="font-medium">{currentConfig.label}</div>
+              <p className="text-sm text-muted-foreground">
+                {currentConfig.description}
+              </p>
+            </div>
+          </div>
+          {!user && (
+            <p className="text-sm text-muted-foreground">
+              Please log in to access your dashboard
+            </p>
+          )}
         </div>
 
         <div className="pt-4 border-t">

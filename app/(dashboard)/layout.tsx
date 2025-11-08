@@ -17,14 +17,14 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, currentRole, initializeDummyUser } = useAuthStore();
+  const { user, getRole } = useAuthStore();
 
   useEffect(() => {
-    const role = currentRole || (user?.role as UserRole);
+    const role = getRole();
     
-    // If no user or role, initialize with CLIENT for demo purposes
-    if (!user && !currentRole) {
-      initializeDummyUser("CLIENT");
+    // If no user, redirect to login
+    if (!user) {
+      router.push("/login");
       return;
     }
 
@@ -45,9 +45,9 @@ export default function DashboardLayout({
         return;
       }
     }
-  }, [user, currentRole, pathname, router, initializeDummyUser]);
+  }, [user, pathname, router, getRole]);
 
-  const role = currentRole || (user?.role as UserRole);
+  const role = getRole();
   
   // Check if user has access to current route
   const hasAccess = 
