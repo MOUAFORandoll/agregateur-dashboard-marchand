@@ -112,7 +112,7 @@ export default function PaymentsPage() {
             </div>
           ) : (
             <PaymentsTable
-              data={payments}
+              data={Array.isArray(payments) ? payments : []}
               onDelete={handleDelete}
               isLoading={isLoading}
             />

@@ -20,6 +20,9 @@ export default function AdminServicesPage() {
     fetchServices();
   }, [fetchServices]);
 
+  // Ensure services is always an array
+  const servicesList = Array.isArray(services) ? services : [];
+
   const handleToggle = async (id: string, currentStatus: boolean) => {
     try {
       await enableOrDisableService(id);
@@ -45,9 +48,13 @@ export default function AdminServicesPage() {
             <div className="flex items-center justify-center py-8">
               <div className="text-muted-foreground">Loading services...</div>
             </div>
+          ) : servicesList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="text-muted-foreground">No services found</div>
+            </div>
           ) : (
             <div className="space-y-4">
-              {services.map((service) => (
+              {servicesList.map((service) => (
                 <div
                   key={service.id}
                   className="flex items-center justify-between rounded-lg border p-4"

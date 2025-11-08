@@ -74,7 +74,7 @@ export default function LoginPage() {
               </div>
               <p className="mb-4 italic">
                 "Integration was very straightforward, and customer support is
-                exceptional. Notch Pay is truly a partner for growth."
+                exceptional. FastPay is truly a partner for growth."
               </p>
               <div className="flex items-center gap-2">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
@@ -99,7 +99,7 @@ export default function LoginPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded bg-primary">
               <span className="text-xl font-bold text-primary-foreground">N</span>
             </div>
-            <span className="text-xl font-bold text-primary">Notch Pay</span>
+            <span className="text-xl font-bold text-primary">FastPay</span>
           </div>
 
           <div className="mb-8">

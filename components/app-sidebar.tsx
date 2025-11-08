@@ -1,6 +1,7 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, type ComponentProps } from "react"
+import { useRouter } from "next/navigation"
 import {
   IconDashboard,
   IconUsers,
@@ -115,10 +116,18 @@ const getNavigationForRole = (role: UserRole | null) => {
   }
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, getRole } = useAuthStore()
+export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
+  const router = useRouter()
+  const { user, getRole, isAuthenticated } = useAuthStore()
   const role = getRole() || "CLIENT"
   const navigation = getNavigationForRole(role)
+
+  // Redirect to login if user is not authenticated
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      router.push("/login")
+    }
+  }, [isAuthenticated, user, router])
 
   const userData = user
     ? {
@@ -139,10 +148,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
+              className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
               <a href="/">
-                <IconInnerShadowTop className="!size-5" />
+                <IconInnerShadowTop className="size-5!" />
                 <span className="text-base font-semibold">FastPay</span>
               </a>
             </SidebarMenuButton>

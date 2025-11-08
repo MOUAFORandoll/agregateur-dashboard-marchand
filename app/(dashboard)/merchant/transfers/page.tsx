@@ -105,7 +105,7 @@ export default function TransfersPage() {
               <div className="text-muted-foreground">Loading transfers...</div>
             </div>
           ) : (
-            <TransfersTable data={transfers} isLoading={isLoading} />
+            <TransfersTable data={Array.isArray(transfers) ? transfers : []} isLoading={isLoading} />
           )}
         </CardContent>
       </Card>

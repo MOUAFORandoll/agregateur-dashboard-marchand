@@ -61,7 +61,15 @@ export const usePaymentsStore = create<PaymentsState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await paymentsController.getAllPayments(params);
-      const data = Array.isArray(response) ? response : (response as { data?: Payment[]; payments?: Payment[] })?.data || (response as { data?: Payment[]; payments?: Payment[] })?.payments || [];
+      // Ensure we always get an array
+      let data: Payment[] = [];
+      if (Array.isArray(response)) {
+        data = response;
+      } else if (response && typeof response === "object") {
+        data = (response as { data?: Payment[]; payments?: Payment[] })?.data || 
+               (response as { data?: Payment[]; payments?: Payment[] })?.payments || 
+               [];
+      }
       set({
         payments: data,
         isLoading: false,
@@ -72,9 +80,9 @@ export const usePaymentsStore = create<PaymentsState>((set, get) => ({
         },
       });
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to fetch payments";
-      set({ isLoading: false, error: errorMessage });
+      // Error is already handled by API base (toast shown, logged to console)
+      // Set payments to empty array on error
+      set({ payments: [], isLoading: false, error: null });
     }
   },
 

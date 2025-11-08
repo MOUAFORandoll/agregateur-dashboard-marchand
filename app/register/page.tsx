@@ -52,12 +52,12 @@ export default function RegisterPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded bg-primary">
               <span className="text-xl font-bold text-primary-foreground">N</span>
             </div>
-            <span className="text-xl font-bold text-primary">Notch Pay</span>
+            <span className="text-xl font-bold text-primary">FastPay</span>
           </div>
 
           <div className="mb-8">
             <h1 className="mb-2 text-3xl font-bold">
-              Create your Notch Pay account
+              Create your FastPay account
             </h1>
           </div>
 
