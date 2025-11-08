@@ -3,6 +3,7 @@
 import { useEffect, Suspense, useState } from "react";
 import { usePaymentsStore } from "@/stores/payments.store";
 import { useMobileServicesStore } from "@/stores/mobile-services.store";
+import { useAuthStore } from "@/stores/auth.store";
 import { PaymentsTable } from "@/components/shared/payments-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +54,7 @@ interface DirectPaymentFormData {
 export default function PaymentsPage() {
   const { payments, isLoading, pagination, fetchPayments, deletePayment, createDirectPayment } = usePaymentsStore();
   const { services, fetchServices } = useMobileServicesStore();
+  const { isAuthenticated, isHydrated } = useAuthStore();
   const [isDirectPaymentOpen, setIsDirectPaymentOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
@@ -70,9 +72,13 @@ export default function PaymentsPage() {
   });
 
   useEffect(() => {
-    fetchPayments({ page: 1, size: 10 });
-    fetchServices();
-  }, [fetchPayments, fetchServices]);
+    // Only fetch data when user is authenticated and store is hydrated
+    if (isHydrated && isAuthenticated) {
+      fetchPayments({ page: 1, size: 10 });
+      fetchServices();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, isAuthenticated]);
 
   const handleDeleteClick = (id: string, reference?: string) => {
     setPaymentToDelete({ id, reference });

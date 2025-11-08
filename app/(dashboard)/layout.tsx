@@ -17,7 +17,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isHydrated } = useAuthStore();
+  const { user, isHydrated, isAuthenticated } = useAuthStore();
   const {
     organisations,
     organisation,
@@ -29,13 +29,15 @@ export default function DashboardLayout({
 
   // Fetch organizations for merchant users
   useEffect(() => {
-    if (isHydrated && role === "MERCHANT") {
+    // Only fetch when authenticated, hydrated, and user is a merchant
+    if (isHydrated && isAuthenticated && role === "MERCHANT") {
       // Only fetch if we don't have organizations and we're not already loading
       if (organisations.length === 0 && !orgLoading) {
         fetchMyOrganisations();
       }
     }
-  }, [isHydrated, role, organisations.length, orgLoading, fetchMyOrganisations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, isAuthenticated, role, organisations.length, orgLoading]);
 
   // Show loading state while hydrating or fetching organization
   if (!isHydrated || (role === "MERCHANT" && orgLoading && !organisation)) {

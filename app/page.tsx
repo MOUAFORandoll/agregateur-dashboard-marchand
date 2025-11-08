@@ -21,16 +21,21 @@ import {
 
 export default function Home() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isHydrated } = useAuthStore();
 
   useEffect(() => {
+    // Wait for store to hydrate before making routing decisions
+    if (!isHydrated) {
+      return;
+    }
+    
     // If user is authenticated, redirect to their dashboard
     if (isAuthenticated && user) {
       const { getRoleRoute } = useAuthStore.getState();
       const route = getRoleRoute();
       router.push(route);
     }
-  }, [isAuthenticated, user, router]);
+  }, [isHydrated, isAuthenticated, user, router]);
 
   const features = [
     {

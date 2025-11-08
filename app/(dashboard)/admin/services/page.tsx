@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useMobileServicesStore } from "@/stores/mobile-services.store";
+import { useAuthStore } from "@/stores/auth.store";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +16,15 @@ export default function AdminServicesPage() {
     fetchServices,
     enableOrDisableService,
   } = useMobileServicesStore();
+  const { isAuthenticated, isHydrated } = useAuthStore();
 
   useEffect(() => {
-    fetchServices();
-  }, [fetchServices]);
+    // Only fetch data when user is authenticated and store is hydrated
+    if (isHydrated && isAuthenticated) {
+      fetchServices();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, isAuthenticated]);
 
   // Ensure services is always an array
   const servicesList = Array.isArray(services) ? services : [];

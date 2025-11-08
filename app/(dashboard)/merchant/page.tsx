@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAnalyticsStore } from "@/stores/analytics.store";
+import { useAuthStore } from "@/stores/auth.store";
 import {
   CreditCard,
   ArrowRight,
@@ -32,10 +33,15 @@ const formatNumber = (num: number): string => {
 
 export default function MerchantPage() {
   const { overview, isLoading, fetchOverview } = useAnalyticsStore();
+  const { isAuthenticated, isHydrated } = useAuthStore();
 
   useEffect(() => {
-    fetchOverview();
-  }, [fetchOverview]);
+    // Only fetch data when user is authenticated and store is hydrated
+    if (isHydrated && isAuthenticated) {
+      fetchOverview();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, isAuthenticated]);
 
   const analyticsCards = [
     {

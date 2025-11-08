@@ -2,6 +2,7 @@
 
 import { useEffect, Suspense, useState } from "react";
 import { usePaymentsStore } from "@/stores/payments.store";
+import { useAuthStore } from "@/stores/auth.store";
 import { PaymentsTable } from "@/components/shared/payments-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,9 +56,15 @@ export default function ManagePaymentLinksPage() {
     },
   });
 
+  const { isAuthenticated, isHydrated } = useAuthStore();
+
   useEffect(() => {
-    fetchPayments({ page: 1, size: 10 });
-  }, [fetchPayments]);
+    // Only fetch data when user is authenticated and store is hydrated
+    if (isHydrated && isAuthenticated) {
+      fetchPayments({ page: 1, size: 10 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, isAuthenticated]);
 
   const handleDeleteClick = (id: string, reference?: string) => {
     setPaymentToDelete({ id, reference });

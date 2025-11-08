@@ -2,6 +2,7 @@
 
 import { useEffect, Suspense } from "react";
 import { useTransfersStore } from "@/stores/transfers.store";
+import { useAuthStore } from "@/stores/auth.store";
 import { TransfersTable } from "@/components/shared/transfers-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,10 +12,15 @@ import Link from "next/link";
 
 export default function TransfersPage() {
   const { transfers, isLoading, fetchTransfers } = useTransfersStore();
+  const { isAuthenticated, isHydrated } = useAuthStore();
 
   useEffect(() => {
-    fetchTransfers();
-  }, [fetchTransfers]);
+    // Only fetch data when user is authenticated and store is hydrated
+    if (isHydrated && isAuthenticated) {
+      fetchTransfers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, isAuthenticated]);
 
   return (
     <div className="flex flex-col gap-6 p-6">
