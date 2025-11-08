@@ -119,16 +119,21 @@ const getNavigationForRole = (role: UserRole | null) => {
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const router = useRouter()
-  const { user, getRole, isAuthenticated } = useAuthStore()
+  const { user, getRole, isAuthenticated, isHydrated } = useAuthStore()
   const role = getRole() || "CLIENT"
   const navigation = getNavigationForRole(role)
 
-  // Redirect to login if user is not authenticated
+  // Note: AuthProvider already handles authentication and routing
+  // This component should not redirect as it causes conflicts
+  // Only check after hydration to avoid unnecessary redirects
   useEffect(() => {
-    if (!isAuthenticated || !user) {
-      router.push("/login")
+    // Wait for hydration before making routing decisions
+    if (!isHydrated) {
+      return;
     }
-  }, [isAuthenticated, user, router])
+    // AuthProvider handles redirects, so we don't need to do it here
+    // This prevents infinite redirect loops
+  }, [isHydrated, isAuthenticated, user, router])
 
   const userData = user
     ? {

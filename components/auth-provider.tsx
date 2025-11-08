@@ -68,7 +68,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return;
       }
     }
-  }, [isHydrated, isAuthenticated, user, role, pathname, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, isAuthenticated, pathname]);
 
   // Show loading state while hydrating
   if (!isHydrated) {
