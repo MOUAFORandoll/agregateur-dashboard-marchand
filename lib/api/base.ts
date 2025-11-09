@@ -90,10 +90,14 @@ const handleApiError = (error: IAppErrorDto["error"], status: number): void => {
   }
 };
 
+// Cache the auth store module to avoid repeated require() calls
+let cachedAuthStore: typeof import("@/stores/auth.store") | null = null;
+
 /**
  * Get the current auth token from the auth store (auth context)
  * This ensures the token is always fresh from the auth context/store
  * Falls back to localStorage if store is not available (SSR scenarios)
+ * Caches the store module to prevent repeated require() calls
  */
 const getTokenFromAuthStore = (): string | null => {
   // Server-side: return null (no token available)
@@ -101,13 +105,18 @@ const getTokenFromAuthStore = (): string | null => {
   
   try {
     // Client-side: get token from auth store
-    // Using dynamic import to avoid SSR issues with Zustand
-    const authStoreModule = require("@/stores/auth.store");
-    const state = authStoreModule.useAuthStore.getState();
+    // Cache the module to avoid repeated require() calls which can cause issues
+    if (!cachedAuthStore) {
+      cachedAuthStore = require("@/stores/auth.store");
+    }
+    const state = cachedAuthStore.useAuthStore.getState();
     return state.token;
   } catch (error) {
     // Fallback to localStorage if store is not available or not initialized
-    console.warn("Auth store not available, falling back to localStorage:", error);
+    // Only log warning in development to avoid console spam
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Auth store not available, falling back to localStorage:", error);
+    }
     return getAuthToken();
   }
 };

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { usersController } from "@/controllers/users.controller";
+import { useAuthStore } from "@/stores/auth.store";
 import { UsersTable } from "@/components/shared/users-table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
@@ -12,10 +13,15 @@ import type { UserDto } from "@/types/api";
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isHydrated } = useAuthStore();
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    // Only fetch data when user is authenticated and store is hydrated
+    if (isHydrated && isAuthenticated) {
+      fetchUsers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, isAuthenticated]);
 
   const fetchUsers = async () => {
     setIsLoading(true);
