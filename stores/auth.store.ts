@@ -39,6 +39,9 @@ interface AuthState {
     password: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
+  sendPasswordResetOtp: (email: string) => Promise<string>;
+  verifyPasswordResetOtp: (userId: string, otpCode: string) => Promise<void>;
+  resetPassword: (userId: string, password: string, otpCode: string) => Promise<void>;
   setUser: (user: UserDto | null) => void;
   clearError: () => void;
   getRole: () => UserRole | null;
@@ -119,6 +122,51 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             error: null,
           });
+        }
+      },
+
+      sendPasswordResetOtp: async (email: string): Promise<string> => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await authController.forgotPassword({ email });
+          // Response contains user with id
+          const userId = response.user?.id;
+          if (!userId) {
+            throw new Error("User ID not found in response");
+          }
+          set({ isLoading: false });
+          return userId;
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      verifyPasswordResetOtp: async (userId: string, otpCode: string): Promise<void> => {
+        set({ isLoading: true, error: null });
+        try {
+          await authController.verifyPasswordOtp({
+            user_id: userId,
+            otp_code: otpCode,
+          });
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      resetPassword: async (userId: string, password: string, otpCode: string): Promise<void> => {
+        set({ isLoading: true, error: null });
+        try {
+          await authController.resetPassword(userId, {
+            password,
+            otp_code: otpCode,
+          });
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
         }
       },
 
