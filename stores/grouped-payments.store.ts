@@ -140,16 +140,18 @@ export const useGroupedPaymentsStore = create<GroupedPaymentsState>((set, get) =
       const response = await groupedPaymentsController.createGroupedPayment(data);
       
       // Parse the response to extract grouped_payment data
-      let paymentData: {
+      interface GroupedPaymentResponse {
         currency: string;
         when_created: string;
         launch_url: string;
         reference: string;
         reason?: string;
-      } | null = null;
+      }
+
+      let paymentData: GroupedPaymentResponse | null = null;
 
       if (response && typeof response === "object") {
-        const groupedPayment = (response as { grouped_payment?: typeof paymentData })?.grouped_payment;
+        const groupedPayment = (response as { grouped_payment?: GroupedPaymentResponse })?.grouped_payment;
         if (groupedPayment) {
           paymentData = {
             currency: groupedPayment.currency,
