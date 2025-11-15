@@ -133,10 +133,12 @@ export default function PaymentsPage() {
     return new Intl.NumberFormat("en-US").format(num);
   };
 
-  const hasPayments = payments.length > 0;
+  // Ensure payments is always an array to prevent filter errors
+  const safePayments = Array.isArray(payments) ? payments : [];
+  const hasPayments = safePayments.length > 0;
   const totalPayments = pagination.total;
-  const initiatedPayments = payments.filter((p) => p.status === "INIT").length;
-  const failedPayments = payments.filter((p) => p.status === "FAILED").length;
+  const initiatedPayments = safePayments.filter((p) => p.status === "INIT").length;
+  const failedPayments = safePayments.filter((p) => p.status === "FAILED").length;
 
   const statCards = [
     {
@@ -478,7 +480,7 @@ export default function PaymentsPage() {
               fallback={<DataTableSkeleton columnCount={7} rowCount={5} />}
             >
               <PaymentsTable
-                data={Array.isArray(payments) ? payments : []}
+                data={safePayments}
                 onDelete={handleDeleteClick}
                 isLoading={isLoading}
                 pagination={pagination}

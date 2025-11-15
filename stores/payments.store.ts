@@ -14,6 +14,7 @@ interface Payment {
   status: string;
   transaction_type?: string;
   createdAt?: string;
+  launch_url?: string;
   organisation?: {
     id: string;
     libelle?: string;
@@ -196,9 +197,10 @@ export const usePaymentsStore = create<PaymentsState>((set, get) => ({
   createPayment: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      await paymentsController.createPayment(data);
+      const response = await paymentsController.createPayment(data);
       await get().fetchPayments();
       set({ isLoading: false });
+      return response;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to create payment";
