@@ -227,7 +227,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
             <OrganizationSwitcher align="start" fullWidth />
           </div>
         )}
-        <NavMain items={navigation.navMain} />
+        <NavMain items={navigation.navMain} role={role} />
       </SidebarContent>
       <SidebarFooter>
         <ThemeSwitcher />
